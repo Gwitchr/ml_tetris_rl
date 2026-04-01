@@ -2,6 +2,16 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
+TETROMINOES = {
+    0: np.array([[1, 1, 1, 1]]),  # I
+    1: np.array([[1, 1], [1, 1]]),  # O
+    2: np.array([[0, 1, 0], [1, 1, 1]]),  # T
+    3: np.array([[1, 0, 0], [1, 1, 1]]),  # L
+    4: np.array([[0, 0, 1], [1, 1, 1]]),  # J
+    5: np.array([[1, 1, 0], [0, 1, 1]]),  # S
+    6: np.array([[0, 1, 1], [1, 1, 0]]),  # Z
+}
+
 
 class TetrisEnv(gym.Env):
     """
@@ -39,8 +49,8 @@ class TetrisEnv(gym.Env):
             shape=(obs_size,),
             dtype=np.float32,
         )
-
-        self.action_space = spaces.Discrete(self.board_width)
+        # temporal to avoid edge issues
+        self.action_space = spaces.Discrete(self.board_width - 3)
 
     def _get_observation(self) -> np.ndarray:
         board_flat = self.board.flatten()
@@ -67,7 +77,7 @@ class TetrisEnv(gym.Env):
         return observation, info
 
     def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
-        self._drop_piece(action)
+        self._place_piece(action)
         reward = 1.0
         terminated = np.any(self.board[0] == 1.0)
         truncated = False
@@ -97,4 +107,33 @@ class TetrisEnv(gym.Env):
             if self.board[row, column] == 0:
                 print(f"Placing block at row:{row}, col:{column}")
                 self.board[row, column] = 1.0
+                return
+
+    def _place_piece(self, column: int) -> None:
+        piece = TETROMINOES[self.current_piece]
+
+        print("Current piece:\n", piece)
+        print(f"At col {column}")
+
+        piece_height, piece_width = piece.shape
+
+        # Start from bottom and move updward
+        for row in reversed(range(self.board_height - piece_height + 1)):
+            fits = True
+
+            # fits?
+            for row_height in range(piece_height):
+                for col_width in range(piece_width):
+                    if piece[row_height, col_width] == 1:
+                        if self.board[row + row_height, column + col_width] == 1:
+                            fits = False
+                            break
+                if not fits:
+                    break
+
+            if fits:
+                for row_height in range(piece_height):
+                    for col_width in range(piece_width):
+                        if piece[row_height, col_width] == 1:
+                            self.board[row + row_height, column + col_width] = 1.0
                 return
