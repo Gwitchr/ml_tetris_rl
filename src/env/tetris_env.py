@@ -39,6 +39,8 @@ class TetrisEnv(gym.Env):
         self.board = np.zeros((self.board_height, self.board_width), dtype=np.float32)
         self.current_piece = 0
         self.next_piece = 0
+        self.score = 0.0
+        self.lines_cleared_total = 0
 
         # Observation
         obs_size = self.board_height * self.board_width + 2
@@ -59,7 +61,12 @@ class TetrisEnv(gym.Env):
         return observation
 
     def get_info(self) -> dict:
-        return {"current": self.current_piece, "next": self.next_piece}
+        return {
+            "current": self.current_piece,
+            "next": self.next_piece,
+            "score": self.score,
+            "lines_cleared": self.lines_cleared_total,
+        }
 
     def reset(
         self, *, seed: int | None = None, options: dict | None = None
@@ -67,6 +74,8 @@ class TetrisEnv(gym.Env):
         super().reset(seed=seed)
 
         self.board = np.zeros((self.board_height, self.board_width), dtype=np.float32)
+        self.score = 0.0
+        self.lines_cleared_total = 0
 
         self.current_piece = int(self.np_random.integers(0, self.num_pieces_types))
         self.next_piece = int(self.np_random.integers(0, self.num_pieces_types))
@@ -78,8 +87,19 @@ class TetrisEnv(gym.Env):
 
     def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
         self._place_piece(action)
-        reward = 1.0
-        terminated = np.any(self.board[0] == 1.0)
+
+        lines_cleared = self._clear_full_lines()
+        self.lines_cleared_total += lines_cleared
+
+        # minimal reward
+        reward = float(lines_cleared)
+
+        # survival reward
+        reward += 0.1
+
+        self.score += reward
+
+        terminated = bool(np.any(self.board[0] == 1.0))
         truncated = False
 
         self.current_piece = self.next_piece
@@ -87,6 +107,7 @@ class TetrisEnv(gym.Env):
 
         observation = self._get_observation()
         info = self.get_info()
+        info["lines_cleared_this_step"] = lines_cleared
 
         return observation, reward, terminated, truncated, info
 
@@ -137,3 +158,35 @@ class TetrisEnv(gym.Env):
                         if piece[row_height, col_width] == 1:
                             self.board[row + row_height, column + col_width] = 1.0
                 return
+
+    def _clear_full_lines(self) -> int:
+        """
+        Clear filled rows and return how many were cleard
+        """
+        full_rows = []
+
+        for row in range(self.board_height):
+            if np.all(self.board[row] == 1.0):
+                full_rows.append(row)
+
+        num_cleared = len(full_rows)
+
+        if num_cleared == 0:
+            return 0
+
+        # keep other rows
+        remaining_rows = []
+
+        for row in range(self.board_height):
+            if row not in full_rows:
+                remaining_rows.append(self.board[row].copy())
+
+        # new empty rows
+        new_rows = [
+            np.zeros((self.board_width,), dtype=np.float32) for _ in range(num_cleared)
+        ]
+
+        # stack rows
+        self.board = np.vstack(new_rows + remaining_rows)
+
+        return num_cleared
