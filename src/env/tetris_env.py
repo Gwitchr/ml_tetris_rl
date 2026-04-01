@@ -71,9 +71,13 @@ class TetrisEnv(gym.Env):
         return observation, info
 
     def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
-        reward = 0.0
-        terminated = False
+        self._drop_piece(action)
+        reward = 1.0
+        terminated = np.any(self.board[0]==1.0)
         truncated = False
+
+        self.current_piece = self.next_piece
+        self.next_piece = int(self.np_random.integers(0, self.num_pieces_types))
 
         observation = self._get_observation()
         info = self.get_info()
@@ -91,6 +95,10 @@ class TetrisEnv(gym.Env):
         Fill the lowest available cell
         """
         for row in reversed(range(self.board_height)):
-            if self.board[row, column] ==0:
+            print(
+                       f"Checking cell row={row}, col={column}, value={self.board[row, column]}"
+                   )
+            if self.board[row, column] == 0:
+                print(f"Placing block at row:{row}, col:{column}")
                 self.board[row, column] = 1.0
                 return
