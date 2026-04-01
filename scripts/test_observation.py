@@ -3,10 +3,10 @@ import argparse
 from src.env.tetris_env import TetrisEnv
 
 
-def main(debug:bool = False) -> None:
+def main(debug: bool = False) -> None:
     env = TetrisEnv()
 
-    observation,info = env.reset()
+    observation, info = env.reset()
 
     print("Starting env test...")
 
@@ -28,19 +28,20 @@ def main(debug:bool = False) -> None:
             break
 
     if debug:
-        print("Observation type: ", type(observation) )
-        print("Observation shape: ", observation.shape )
-        print("Observation dtype: ", observation.dtype )
-        print("First 10 values: ", observation[:10] )
-        print("Last 2 values (piece Ids): ", observation[-2:] )
-        print("Info: ", info )
+        print("Observation type: ", type(observation))
+        print("Observation shape: ", observation.shape)
+        print("Observation dtype: ", observation.dtype)
+        print("First 10 values: ", observation[:10])
+        print("Last 2 values (piece Ids): ", observation[-2:])
+        print("Info: ", info)
 
-        print("Observation space: ", env.observation_space  )
-        print("Action space: ", env.action_space  )
+        print("Observation space: ", env.observation_space)
+        print("Action space: ", env.action_space)
 
         print("Observation inside space: ", env.observation_space.contains(observation))
 
         env.render()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
