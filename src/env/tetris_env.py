@@ -40,8 +40,7 @@ class TetrisEnv(gym.Env):
             dtype=np.float32,
         )
 
-        # Placeholder action space for now
-        self.action_space = spaces.Discrete(1)
+        self.action_space = spaces.Discrete(self.board_width)
 
     def _get_observation(self) -> np.ndarray:
         board_flat = self.board.flatten()
@@ -85,3 +84,13 @@ class TetrisEnv(gym.Env):
         print("Board shape:", self.board.shape)
         print("Current piece:", self.current_piece)
         print("Next piece:", self.next_piece)
+
+    def _drop_piece(self, column:int) -> None:
+        """
+        Drop a single block into a column
+        Fill the lowest available cell
+        """
+        for row in reversed(range(self.board_height)):
+            if self.board[row, column] ==0:
+                self.board[row, column] = 1.0
+                return
