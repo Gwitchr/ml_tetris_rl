@@ -31,3 +31,15 @@ def test_reward_survival_bonus()-> None:
     _, reward, _, _, _ = env.step(0)
 
     assert reward == 0.1
+
+def test_reward_with_line_clear()-> None:
+    env = TetrisEnv()
+    env.reset()
+
+    env.board[19, 4:] = 1.0
+    env.current_piece = 0
+
+    _, reward, _,_,info = env.step(0)
+
+    assert reward == 1.1
+    assert info["lines_cleared_this_step"] == 1
