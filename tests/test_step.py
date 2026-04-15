@@ -23,3 +23,11 @@ def test_step_changes_board() -> None:
     env.step(0)
 
     assert not (env.board == board_before).all()
+
+def test_reward_survival_bonus()-> None:
+    env = TetrisEnv()
+    env.reset()
+
+    _, reward, _, _, _ = env.step(0)
+
+    assert reward == 0.1
