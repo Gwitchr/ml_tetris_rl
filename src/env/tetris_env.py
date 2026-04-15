@@ -52,7 +52,7 @@ class TetrisEnv(gym.Env):
             dtype=np.float32,
         )
         # temporal to avoid edge issues
-        self.action_space = spaces.Discrete(self.board_width - 3)
+        self.action_space = spaces.Discrete(self.board_width)
 
     def _get_observation(self) -> np.ndarray:
         board_flat = self.board.flatten()
@@ -120,6 +120,9 @@ class TetrisEnv(gym.Env):
         piece = TETROMINOES[self.current_piece]
 
         piece_height, piece_width = piece.shape
+        column = min(column, self.board_width -  piece_width)
+
+
 
         # Start from bottom and move upward
         for row in reversed(range(self.board_height - piece_height + 1)):
