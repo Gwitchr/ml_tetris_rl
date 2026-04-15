@@ -62,10 +62,10 @@ class TetrisEnv(gym.Env):
 
     def get_info(self) -> dict:
         return {
-            "current": self.current_piece,
-            "next": self.next_piece,
-            "score": self.score,
-            "lines_cleared": self.lines_cleared_total,
+            "current": int(self.current_piece),
+            "next": int(self.next_piece),
+            "score": float(self.score),
+            "lines_cleared": int(self.lines_cleared_total),
         }
 
     def reset(
