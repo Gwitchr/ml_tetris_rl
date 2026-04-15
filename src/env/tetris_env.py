@@ -116,29 +116,12 @@ class TetrisEnv(gym.Env):
         print("Current piece:", self.current_piece)
         print("Next piece:", self.next_piece)
 
-    def _drop_piece(self, column: int) -> None:
-        """
-        Drop a single block into a column
-        Fill the lowest available cell
-        """
-        for row in reversed(range(self.board_height)):
-            print(
-                f"Checking cell row={row}, col={column}, value={self.board[row, column]}"
-            )
-            if self.board[row, column] == 0:
-                print(f"Placing block at row:{row}, col:{column}")
-                self.board[row, column] = 1.0
-                return
-
     def _place_piece(self, column: int) -> None:
         piece = TETROMINOES[self.current_piece]
 
-        print("Current piece:\n", piece)
-        print(f"At col {column}")
-
         piece_height, piece_width = piece.shape
 
-        # Start from bottom and move updward
+        # Start from bottom and move upward
         for row in reversed(range(self.board_height - piece_height + 1)):
             fits = True
 
@@ -161,7 +144,7 @@ class TetrisEnv(gym.Env):
 
     def _clear_full_lines(self) -> int:
         """
-        Clear filled rows and return how many were cleard
+        Clear filled rows and return how many were cleared
         """
         full_rows = []
 
